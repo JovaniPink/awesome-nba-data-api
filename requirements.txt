@@ -21,7 +21,7 @@ requests==2.25.1
 six==1.16.0
 SQLAlchemy==1.4.15
 swagger-ui-bundle==0.0.8
-urllib3==1.26.4
+urllib3==1.26.20
 Werkzeug==2.0.1
 bcrypt
 flask_login
