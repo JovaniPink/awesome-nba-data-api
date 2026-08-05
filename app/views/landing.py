@@ -7,6 +7,7 @@ from flask import (
     jsonify,
     render_template_string,
 )
+from flask_login import current_user, login_required
 
 # When using a Flask app factory we must use a blueprint to avoid needing 'app' for '@app.route'
 main_blueprint = Blueprint("main", __name__, template_folder="templates")
@@ -24,4 +25,3 @@ def member_page():
 @login_required
 def home_page():
     return render_template("pages/home.html")
-

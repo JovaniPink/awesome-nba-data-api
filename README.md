@@ -1,26 +1,25 @@
 # NBA API
 
-> OpenAPI Flask app that serves data to measuredstudios.com on NBA data.
+> OpenAPI service for NBA data used by measuredstudios.com.
 
 ## Features
 
-Its not just Flask but an ecosystem to properly create a RESTful API service:
+The service uses:
 
-- [Connexion](https://connexion.readthedocs.io/en/latest/index.html) is a framework on top of Flask that automagically handles HTTP requests defined using OpenAPI (formerly known as Swagger), supporting both v2.0 and v3.0 of the specification.
-- [Flask](https://flask.palletsprojects.com/en/1.1.x/) is a lightweight WSGI web application framework in Python. It is designed to make getting started very quickly and very easily.
+- [Connexion](https://connexion.readthedocs.io/) to bind the OpenAPI contract to Python handlers.
+- [Flask](https://flask.palletsprojects.com/) for the web application.
 - [Blueprints](https://flask.palletsprojects.com/en/1.0.x/blueprints/) for scalability.
 - [marshmallow](https://marshmallow.readthedocs.io/en/stable/) is an ORM/ODM/framework-agnostic library for converting complex datatypes, such as objects, to and from native Python datatypes.
 - [Flask-Marshmallow](https://flask-marshmallow.readthedocs.io/en/latest/) is a thin integration layer for Flask and marshmallow that adds additional features to marshmallow.
 - [SQLAlchemy](https://www.sqlalchemy.org/library.html) is the Python SQL toolkit and Object Relational Mapper that gives application developers the full power and flexibility of SQL.
-- [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/en/2.x/) is an extension for Flask that adds support for SQLAlchemy to your application. It aims to simplify using SQLAlchemy with Flask.
+- [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/) for database integration.
 - [Alembic](http://alembic.zzzcomputing.com/)
 - [flask_migrate](https://flask-migrate.readthedocs.io/en/latest/).
-- [Flask-Script](https://flask-script.readthedocs.io/)
 - [Tailwind](https://tailwindcss.com/) is a utility-first CSS framework for rapidly building custom user interfaces.
 
 ### Code characteristics
 
-- Tested on Python 2.6, 2.7, 3.3, 3.4, 3.5 and 3.6
+- Runs on Python 3.10
 - Well organized directories with lots of comments
   - app
     - commands
@@ -28,7 +27,7 @@ Its not just Flask but an ecosystem to properly create a RESTful API service:
     - static
     - templates
     - views
-  - tests
+  - test
 - Includes test framework (`py.test`)
 - Includes database migration framework (`alembic`)
 
@@ -36,33 +35,44 @@ Its not just Flask but an ecosystem to properly create a RESTful API service:
 
 ### 1. Get the code
 
-    git clone
-    cd nba-api
+    git clone git@github.com:JovaniPink/awesome-nba-data-api.git
+    cd awesome-nba-data-api
 
 ### 2. Install requirements
 
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
+
+For Docker Compose, create the local environment file first:
+
+    cp .env.example .env
 
 ### Initializing the Database
 
-    # Create DB tables and populate the roles and users tables
-    python manage.py init_db
+    # Create DB tables and populate sample people
+    flask --app manage init-db
 
-### 3. Set the FLASK_APP environment variable
+### 3. Run the application
 
-### 4. Run the application
+For local development:
+
+    python manage.py
 
 #### Running the app (production)
 
-To run the application in production mode, gunicorn3 is used (and included in requirements.txt.
+The container runs the Connexion ASGI application with Uvicorn:
 
-    # Run the application in production mode
-    ./runserver.sh
+    docker compose up --build
 
 #### Running the automated tests
 
-    # Start the Flask development web server
-    py.test tests/
+    pytest -q
+
+### Updating dependencies
+
+Edit the direct pins in `requirements.in`, then regenerate the complete lock file with Python 3.10:
+
+    python -m pip install pip-tools
+    pip-compile --upgrade --resolver=backtracking --strip-extras --output-file=requirements.txt requirements.in
 
 ## Example
 
@@ -78,7 +88,7 @@ To run the application in production mode, gunicorn3 is used (and included in re
 .route('/api/seasons')
 .route('/api/season/<season_id>')
 .route('/api/game/<date_string>')
-Application Errors https://flask.palletsprojects.com/en/1.1.x/errorhandling/
+Application errors: https://flask.palletsprojects.com/en/stable/errorhandling/
 
 ### Model Routes
 

@@ -1,62 +1,50 @@
-# __init__.py is a special Python file that allows a directory to become
-# a Python package so it can be accessed using the 'import' statement.
+"""NBA API application factory and extension ownership."""
 
-from datetime import datetime
 import os
 
 import connexion
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from flask_marshmallow import Marshmallow
-from flask_migrate import Migrate, MigrateCommand
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Instantiate Flask extensions
 ma = Marshmallow()
 db = SQLAlchemy()
 migrate = Migrate()
+login_manager = LoginManager()
 
-# https://flask.palletsprojects.com/en/0.12.x/patterns/appfactories/
-def create_app(extra_config_settings={}):
-    """Create a Flask application.
-    """
-    # Create the connexion application instance
-    app = connexion.FlaskApp(__name__, specification_dir=basedir)
 
-    # Read the openapi.yaml file to configure the endpoints
-    app.add_api("swagger.yaml")
+@login_manager.user_loader
+def load_user(_user_id):
+    """Return no user until the API defines a persistent user model."""
+    return None
 
-    # Load App Config settings
-    # Load common settings from 'app/settings.py' file
+
+def create_app(extra_config_settings=None):
+    """Create the Connexion application and its underlying Flask app."""
+    connexion_app = connexion.FlaskApp(__name__, specification_dir=basedir)
+    app = connexion_app.app
+
     app.config.from_object("app.settings")
-    # Load local settings from 'app/local_settings.py'
-    app.config.from_object("app.local_settings")
-    # Load extra config settings from 'extra_config_settings' param
-    app.config.update(extra_config_settings)
+    if os.path.exists(os.path.join(basedir, "local_settings.py")):
+        app.config.from_object("app.local_settings")
+    app.config.update(extra_config_settings or {})
 
-    # Setup Flask-Extensions -- do this _after_ app config has been loaded
-    # We are doing this because our web application could have different
-    # config files depending the server environment and context.
+    connexion_app.add_api("swagger.yaml")
 
-    # Setup Marshmallow
     ma.init_app(app)
-
-    # Setup Flask-SQLAlchemy
     db.init_app(app)
-
-    # Setup Flask-Migrate
     migrate.init_app(app, db)
+    login_manager.init_app(app)
 
-    # Register blueprints
-    from app.views.landing import main_blueprint
+    # Register model metadata before CLI commands or tests call db.create_all().
+    from app.models import nba_models  # noqa: F401
     from app.views.apis import api_blueprint
+    from app.views.landing import main_blueprint
 
     app.register_blueprint(main_blueprint)
     app.register_blueprint(api_blueprint)
 
-    # Register blueprints
-    from app.views.landing import main_blueprint
-
-    app.register_blueprint(main_blueprint)
-
-    return app
+    return connexion_app

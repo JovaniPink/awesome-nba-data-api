@@ -1,4 +1,4 @@
-{% extends "common/global_base.html" %}
+{% extends "layout.html" %}
 
 {% block content %}
     <header class="bg-primary">
@@ -7,7 +7,7 @@
                 <div class="col-12">
                     <div class="text-center m-0 vh-100 d-flex flex-column justify-content-center">
                         <h1 class="display-4">Welcome to FlaskApp</h1>
-                        <p class="lead">Quickly get started with Flask, Flask-User, and an open source theme.</p>
+                        <p class="lead">Explore the NBA data API and its OpenAPI documentation.</p>
                         <div class="row">
                             <div class="col-lg-4 col-sm-6 mx-auto">
                                 <div class="input-group mb-3">
@@ -52,15 +52,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#grid">Grid</a>
                     </li>
-                    {% if current_user.is_authenticated: %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.logout') }}">Sign out</a>
-                    </li>    
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.login') }}">Sign In / Signup</a>
-                    </li>                              
-                    {% endif %}                
+                        <a class="nav-link" href="/api/ui/">API Docs</a>
+                    </li>
                 </ul>
             </div>
         </div>

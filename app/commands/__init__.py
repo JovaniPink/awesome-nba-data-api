@@ -1,4 +1,6 @@
 # __init__.py is a special Python file that allows a directory to become
 # a Python package so it can be accessed using the 'import' statement.
 
-from .init_db import InitDbCommand
+from .init_db import init_db_command
+
+__all__ = ["init_db_command"]
