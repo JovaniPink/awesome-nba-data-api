@@ -19,7 +19,7 @@ The service uses:
 
 ### Code characteristics
 
-- Runs on Python 3.10
+- Runs on Python 3.14
 - Well organized directories with lots of comments
   - app
     - commands
@@ -69,7 +69,7 @@ The container runs the Connexion ASGI application with Uvicorn:
 
 ### Updating dependencies
 
-Edit the direct pins in `requirements.in`, then regenerate the complete lock file with Python 3.10:
+Edit the direct pins in `requirements.in`, then regenerate the complete lock file with Python 3.14:
 
     python -m pip install pip-tools
     pip-compile --upgrade --resolver=backtracking --strip-extras --output-file=requirements.txt requirements.in

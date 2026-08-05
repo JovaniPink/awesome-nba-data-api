@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.14
 
 ENV FLASK_APP=manage.py
 WORKDIR /app
