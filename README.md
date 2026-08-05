@@ -28,7 +28,7 @@ The service uses:
     - templates
     - views
   - test
-- Includes test framework (`py.test`)
+- Includes a pytest test suite
 - Includes database migration framework (`alembic`)
 
 ## Installation
@@ -48,7 +48,10 @@ For Docker Compose, create the local environment file first:
 
 ### Initializing the Database
 
-    # Create DB tables and populate sample people
+    # Apply the checked-in schema migrations
+    flask --app manage:app db upgrade
+
+    # For local demos only: reset the database and populate sample people
     flask --app manage init-db
 
 ### 3. Run the application
@@ -59,17 +62,21 @@ For local development:
 
 #### Running the app (production)
 
-The container runs the Connexion ASGI application with Uvicorn:
+The container applies the checked-in Alembic migrations, then runs the
+Connexion ASGI application with Uvicorn. Set `DATABASE_URL` to a persistent
+database for deployed use.
 
     docker compose up --build
 
 #### Running the automated tests
 
-    pytest -q
+    python -m pytest -q
 
 ### Updating dependencies
 
-Edit the direct pins in `requirements.in`, then regenerate the complete lock file with Python 3.14:
+Edit the direct pins in `requirements.in`, then regenerate the complete lock
+file with Python 3.14. Renovate is configured to use the same `pip-compile`
+contract and will not update transitive pins independently.
 
     python -m pip install pip-tools
     pip-compile --upgrade --resolver=backtracking --strip-extras --output-file=requirements.txt requirements.in
