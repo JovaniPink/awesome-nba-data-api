@@ -12,9 +12,9 @@ basePath: /api
 
 # Paths supported by the server application
 paths:
-  api/people:
+  /people:
     get:
-      operationId: people.read_all
+      operationId: app.api.people.read_all
       tags:
         - People
       summary: Read the entire set of people, sorted by last name

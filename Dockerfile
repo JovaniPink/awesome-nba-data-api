@@ -1,12 +1,13 @@
-FROM python:3.9
+FROM python:3.10
 
-ENV FLASK_APP manage.py
+ENV FLASK_APP=manage.py
+WORKDIR /app
 
-COPY manage.py unicorn.py requirements.txt .env ./
+COPY manage.py unicorn.py requirements.txt ./
 COPY app app
 COPY migrations migrations
 
 RUN pip install -r requirements.txt
 
 EXPOSE 5000
-CMD ["gunicorn", "--config", "gunicorn.py", "???:app"]
+CMD ["uvicorn", "unicorn:app", "--host", "0.0.0.0", "--port", "5000"]

@@ -10,6 +10,10 @@ APP_SYSTEM_ERROR_SUBJECT_LINE = APP_NAME + " system error"
 
 # Flask settings
 CSRF_ENABLED = True
+SECRET_KEY = os.environ.get("SECRET_KEY", "development-only")
 
 # Flask-SQLAlchemy settings
+SQLALCHEMY_DATABASE_URI = os.environ.get(
+    "DATABASE_URL", f"sqlite:///{os.path.join(os.getcwd(), 'nbaapi.db')}"
+)
 SQLALCHEMY_TRACK_MODIFICATIONS = False
