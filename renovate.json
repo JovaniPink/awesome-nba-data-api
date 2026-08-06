@@ -8,7 +8,7 @@
   },
   "pip-compile": {
     "managerFilePatterns": [
-      "/(^|/)requirements\\.txt$/"
+      "/(^|/)requirements(?:-dev)?\\.txt$/"
     ]
   },
   "pip_requirements": {

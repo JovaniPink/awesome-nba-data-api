@@ -1,8 +1,10 @@
 """Application and database smoke tests for the supported runtime."""
 
 import os
+from pathlib import Path
 
 import pytest
+import yaml
 from flask_migrate import downgrade, upgrade
 from sqlalchemy import inspect, text
 
@@ -37,6 +39,20 @@ def test_people_endpoint_uses_openapi_route(application):
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_openapi_contract_identifies_the_service():
+    specification = yaml.safe_load(Path("app/swagger.yaml").read_text(encoding="utf-8"))
+
+    assert specification["info"]["title"] == "NBA Data API"
+    assert "/people" in specification["paths"]
+
+
+def test_legacy_sample_blueprint_remains_available(application):
+    response = application.test_client().get("/nbadata")
+
+    assert response.status_code == 200
+    assert response.json() == {"sample return": 10}
 
 
 @pytest.mark.integration

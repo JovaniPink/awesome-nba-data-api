@@ -35,8 +35,13 @@ jobs:
         with:
           python-version: "3.14"
           cache: pip
-      - run: python -m pip install --disable-pip-version-check -r requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: python -m pip install --disable-pip-version-check -r requirements-dev.txt
+      - run: ruff check app manage.py unicorn.py test
       - run: pytest -q
+      - run: pip-audit -r requirements.txt
       - run: cp .env.example .env
       - run: docker compose config --quiet
       - run: docker build --tag awesome-nba-data-api:test .
