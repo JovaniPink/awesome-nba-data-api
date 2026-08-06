@@ -1,8 +1,13 @@
-# This directory contains Jinja2 template files
+# Jinja templates
 
-This Flask application uses the Jinja2 templating engine to render
-data into HTML files.
+Templates in this directory are rendered by the Flask blueprints in
+`app/views/`.
 
-The template files are organized into the following directories:
+- `layout.html` provides shared page structure.
+- `global.html` is the unauthenticated landing-page template.
+- `pages/` contains route-specific templates, including the authenticated home
+  page.
 
-    pages             # Template files for web pages
+Keep static asset references compatible with Flask's `url_for('static', ...)`
+behavior. When changing visible landing-page content, update the matching smoke
+assertion in `test/test_app.py`.

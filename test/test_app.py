@@ -1,6 +1,10 @@
-"""Application smoke tests for the supported container runtime."""
+"""Application and database smoke tests for the supported runtime."""
+
+import os
 
 import pytest
+from flask_migrate import downgrade, upgrade
+from sqlalchemy import inspect, text
 
 from app import create_app, db
 
@@ -33,3 +37,29 @@ def test_people_endpoint_uses_openapi_route(application):
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+@pytest.mark.integration
+def test_postgres_18_schema_round_trip():
+    """Prove the ORM can connect to and create its schema on PostgreSQL 18."""
+    database_url = os.environ.get("TEST_DATABASE_URL")
+    if not database_url:
+        pytest.skip("TEST_DATABASE_URL is provided by the PostgreSQL integration gate")
+
+    connexion_app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": database_url,
+        }
+    )
+
+    with connexion_app.app.app_context():
+        version_number = db.session.execute(
+            text("SELECT current_setting('server_version_num')::integer")
+        ).scalar_one()
+        assert version_number >= 180000
+        db.session.rollback()
+
+        upgrade()
+        assert inspect(db.engine).has_table("person")
+        downgrade(revision="base")

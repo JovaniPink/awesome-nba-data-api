@@ -1,121 +1,152 @@
 # NBA API
 
-> OpenAPI service for NBA data used by measuredstudios.com.
+A small Connexion and Flask service that exposes an OpenAPI-defined people
+endpoint and provides a foundation for NBA data experiments used by
+Measured Studios.
 
-## Features
+## Current API surface
 
-The service uses:
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Render the landing page. |
+| `GET /api/people` | Return people from the database through the OpenAPI handler. |
+| `GET /nbadata` | Return the current sample JSON response. |
 
-- [Connexion](https://connexion.readthedocs.io/) to bind the OpenAPI contract to Python handlers.
-- [Flask](https://flask.palletsprojects.com/) for the web application.
-- [Blueprints](https://flask.palletsprojects.com/en/1.0.x/blueprints/) for scalability.
-- [marshmallow](https://marshmallow.readthedocs.io/en/stable/) is an ORM/ODM/framework-agnostic library for converting complex datatypes, such as objects, to and from native Python datatypes.
-- [Flask-Marshmallow](https://flask-marshmallow.readthedocs.io/en/latest/) is a thin integration layer for Flask and marshmallow that adds additional features to marshmallow.
-- [SQLAlchemy](https://www.sqlalchemy.org/library.html) is the Python SQL toolkit and Object Relational Mapper that gives application developers the full power and flexibility of SQL.
-- [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/) for database integration.
-- [Alembic](http://alembic.zzzcomputing.com/)
-- [flask_migrate](https://flask-migrate.readthedocs.io/en/latest/).
-- [Tailwind](https://tailwindcss.com/) is a utility-first CSS framework for rapidly building custom user interfaces.
+The OpenAPI contract is in [`app/swagger.yaml`](./app/swagger.yaml). Routes from
+the older README that are not present in that file or the Flask blueprints are
+not supported by the current code.
 
-### Code characteristics
+## Runtime
 
-- Runs on Python 3.14
-- Well organized directories with lots of comments
-  - app
-    - commands
-    - models
-    - static
-    - templates
-    - views
-  - test
-- Includes a pytest test suite
-- Includes database migration framework (`alembic`)
+- Python 3.14
+- Connexion 3 and Flask 3
+- SQLAlchemy 2 and Alembic/Flask-Migrate
+- PostgreSQL 18 in Docker Compose; SQLite for dependency-free local development
+- Uvicorn as the container process
+- Nginx as the Compose reverse proxy
 
-## Installation
+Direct and transitive Python dependencies are locked in
+[`requirements.txt`](./requirements.txt). Edit [`requirements.in`](./requirements.in)
+and regenerate the lock rather than hand-editing transitive pins. Renovate uses
+the same `pip-compile` contract and does not update transitive pins independently.
 
-### 1. Get the code
+## Local development
 
-    git clone git@github.com:JovaniPink/awesome-nba-data-api.git
-    cd awesome-nba-data-api
+Create an isolated Python environment and install the locked dependencies:
 
-### 2. Install requirements
+```sh
+python3.14 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
 
-    python -m pip install -r requirements.txt
+The application uses `nbaapi.db` in the repository directory when
+`DATABASE_URL` is not set. Apply the checked-in migration and start the service:
 
-For Docker Compose, create the local environment file first:
+```sh
+flask --app manage:app db upgrade
+python manage.py
+```
 
-    cp .env.example .env
+Open <http://localhost:5000/>. For local demo data, `flask --app manage init-db`
+drops the configured schema before recreating it and loading sample people.
+Never run that destructive command against a database whose contents must be
+preserved.
 
-### Initializing the Database
+## Docker Compose
 
-    # Apply the checked-in schema migrations
-    flask --app manage:app db upgrade
+Create local configuration, replace every `change-me` value, and start the
+stack:
 
-    # For local demos only: reset the database and populate sample people
-    flask --app manage init-db
+```sh
+cp .env.example .env
+docker compose up --build
+```
 
-### 3. Run the application
+The public entry point is <http://localhost/>. Compose waits for PostgreSQL to
+accept connections before starting the API and waits for the API health check
+before starting Nginx. The API container applies checked-in Alembic migrations
+before starting Uvicorn.
 
-For local development:
+PostgreSQL data is stored in the named `postgres_data` volume at the PostgreSQL
+18 image's supported `/var/lib/postgresql` mount point. Stop containers without
+deleting that volume:
 
-    python manage.py
+```sh
+docker compose down
+```
 
-#### Running the app (production)
+Do not add `--volumes` unless permanently deleting local database data is the
+intended action.
 
-The container applies the checked-in Alembic migrations, then runs the
-Connexion ASGI application with Uvicorn. Set `DATABASE_URL` to a persistent
-database for deployed use.
+### PostgreSQL 13 to 18 upgrade boundary
 
-    docker compose up --build
+PostgreSQL major versions do not perform an in-place upgrade merely because the
+container image tag changed. Make and verify a logical backup from PostgreSQL 13
+before switching a database that contains needed data, then restore it into a
+new PostgreSQL 18 volume. Do not attach a PostgreSQL 13 data directory directly
+to PostgreSQL 18.
 
-#### Running the automated tests
+The official image changed its `PGDATA` and volume layout for PostgreSQL 18, so
+the Compose volume intentionally targets `/var/lib/postgresql`. Review the
+[official image's PostgreSQL 18 storage guidance](https://github.com/docker-library/docs/blob/master/postgres/README.md#pgdata)
+before migrating existing data.
 
-    python -m pytest -q
+## Validation
 
-### Updating dependencies
+```sh
+python -m pytest -q
+cp .env.example .env
+docker compose config --quiet
+docker build --tag awesome-nba-data-api:test .
+```
 
-Edit the direct pins in `requirements.in`, then regenerate the complete lock
-file with Python 3.14. Renovate is configured to use the same `pip-compile`
-contract and will not update transitive pins independently.
+The normal local test run uses SQLite and explicitly skips the PostgreSQL
+integration test. CI provides a PostgreSQL 18 service through
+`TEST_DATABASE_URL`; the integration test checks the server major version and
+round-trips the checked-in Alembic migration.
 
-    python -m pip install pip-tools
-    pip-compile --upgrade --resolver=backtracking --strip-extras --output-file=requirements.txt requirements.in
+The CI workflow also validates the Compose configuration and builds the
+production image. The image runs as unprivileged UID `10001`.
 
-## Example
+## Dependency updates
 
-### Data Routes
+Regenerate the Python lock with Python 3.14:
 
-.route('/') # index html file
-.route('/api/players')
-.route('/api/player/<player_id>')
-.route('/api/player/<player_id>/season/<season_id>')
-.route('/api/teams')
-.route('/api/team/<team_id>')
-.route('/api/team/<team_id>/season/<season_id>')
-.route('/api/seasons')
-.route('/api/season/<season_id>')
-.route('/api/game/<date_string>')
-Application errors: https://flask.palletsprojects.com/en/stable/errorhandling/
+```sh
+python -m pip install pip-tools
+pip-compile --upgrade --resolver=backtracking --strip-extras \
+  --output-file=requirements.txt requirements.in
+python -m pytest -q
+```
 
-### Model Routes
+Database and container-image upgrades require the Docker and integration gates;
+a successful Python unit test alone is not enough.
 
-.route('/api/predict/', methods=['POST']) # Takes in JSON, still figuring out.
+## Project structure
 
-## Data Powering the Web app
+```text
+app/                 Application factory, OpenAPI contract, models, and views
+migrations/          Flask-Migrate configuration and checked-in revisions
+nginx/               Reverse-proxy configuration for the Compose service
+test/                SQLite smoke tests and PostgreSQL integration test
+Dockerfile           Non-root Python 3.14 production image
+docker-compose.yml   PostgreSQL, API, and Nginx runtime graph
+```
 
-## Todo Checklist
+## Known limits
 
-A helpful checklist to gauge how your README is coming on what I would like to finish:
-
-- [ ] Lots of items! :)
-- [ ] Need to add Celery
+- The current OpenAPI contract exposes only the people collection.
+- The `nbadata` endpoint is a placeholder and does not yet return NBA data.
+- Authentication is scaffolded, but no persistent user loader is implemented.
+- There is no production backup or restore automation in this repository.
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+Keep changes focused, update the OpenAPI contract with handler changes, and run
+the relevant unit, PostgreSQL, Compose, and image-build gates before requesting
+review.
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](./LICENSE)

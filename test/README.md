@@ -1,23 +1,23 @@
-# tests directory
+# Tests
 
-This directory contains all the automated tests for the test tool `py.test`.
+Run the test suite from the repository root:
 
-**`.coverage`**: Configuration file for the Python coverage tool `coverage`.
+```sh
+pytest -q
+```
 
-**`conftest.py`**: Defines fixtures for py.test.
+`test_app.py` covers the rendered landing page and the OpenAPI people endpoint
+using a temporary SQLite database. It also contains a PostgreSQL integration
+test that is skipped unless `TEST_DATABASE_URL` is set with an explicit reason.
 
-**`test_*`**: py.test will load any file that starts with the name `test_`
-and run any function that starts with the name `test_`.
+CI starts PostgreSQL 18 and uses:
 
+```sh
+export TEST_DATABASE_URL=postgresql://nbaapi:test-only@localhost:5432/nbaapi
+pytest -q
+```
 
-## Testing the app
-
-    # Run all the automated tests in the tests/ directory
-    ./runtests.sh         # will run "py.test -s tests/"
-
-
-## Generating a test coverage report
-
-    # Run tests and show a test coverage report
-    ./runcoverage.sh      # will run py.test with coverage options
-
+The integration test verifies the server major version, applies the checked-in
+Alembic migration, confirms the `person` table exists, and downgrades to the
+empty migration base. Use a disposable database only; the test intentionally
+changes application tables.
