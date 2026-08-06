@@ -27,7 +27,8 @@ not supported by the current code.
 
 Direct and transitive Python dependencies are locked in
 [`requirements.txt`](./requirements.txt). Edit [`requirements.in`](./requirements.in)
-and regenerate the lock rather than hand-editing transitive pins.
+and regenerate the lock rather than hand-editing transitive pins. Renovate uses
+the same `pip-compile` contract and does not update transitive pins independently.
 
 ## Local development
 
@@ -40,16 +41,17 @@ python -m pip install -r requirements.txt
 ```
 
 The application uses `nbaapi.db` in the repository directory when
-`DATABASE_URL` is not set.
+`DATABASE_URL` is not set. Apply the checked-in migration and start the service:
 
 ```sh
-flask --app manage init-db
+flask --app manage:app db upgrade
 python manage.py
 ```
 
-Open <http://localhost:5000/>. The destructive `init-db` command drops the
-configured schema before recreating it and loading sample people; never run it
-against a database whose contents must be preserved.
+Open <http://localhost:5000/>. For local demo data, `flask --app manage init-db`
+drops the configured schema before recreating it and loading sample people.
+Never run that destructive command against a database whose contents must be
+preserved.
 
 ## Docker Compose
 
@@ -63,11 +65,12 @@ docker compose up --build
 
 The public entry point is <http://localhost/>. Compose waits for PostgreSQL to
 accept connections before starting the API and waits for the API health check
-before starting Nginx. PostgreSQL data is stored in the named
-`postgres_data` volume at the PostgreSQL 18 image's supported
-`/var/lib/postgresql` mount point.
+before starting Nginx. The API container applies checked-in Alembic migrations
+before starting Uvicorn.
 
-Stop containers without deleting the database volume:
+PostgreSQL data is stored in the named `postgres_data` volume at the PostgreSQL
+18 image's supported `/var/lib/postgresql` mount point. Stop containers without
+deleting that volume:
 
 ```sh
 docker compose down
@@ -92,7 +95,7 @@ before migrating existing data.
 ## Validation
 
 ```sh
-pytest -q
+python -m pytest -q
 cp .env.example .env
 docker compose config --quiet
 docker build --tag awesome-nba-data-api:test .
@@ -101,7 +104,7 @@ docker build --tag awesome-nba-data-api:test .
 The normal local test run uses SQLite and explicitly skips the PostgreSQL
 integration test. CI provides a PostgreSQL 18 service through
 `TEST_DATABASE_URL`; the integration test checks the server major version and
-round-trips the SQLAlchemy schema.
+round-trips the checked-in Alembic migration.
 
 The CI workflow also validates the Compose configuration and builds the
 production image. The image runs as unprivileged UID `10001`.
@@ -114,7 +117,7 @@ Regenerate the Python lock with Python 3.14:
 python -m pip install pip-tools
 pip-compile --upgrade --resolver=backtracking --strip-extras \
   --output-file=requirements.txt requirements.in
-pytest -q
+python -m pytest -q
 ```
 
 Database and container-image upgrades require the Docker and integration gates;
@@ -124,7 +127,7 @@ a successful Python unit test alone is not enough.
 
 ```text
 app/                 Application factory, OpenAPI contract, models, and views
-migrations/          Flask-Migrate and Alembic configuration
+migrations/          Flask-Migrate configuration and checked-in revisions
 nginx/               Reverse-proxy configuration for the Compose service
 test/                SQLite smoke tests and PostgreSQL integration test
 Dockerfile           Non-root Python 3.14 production image
@@ -136,8 +139,7 @@ docker-compose.yml   PostgreSQL, API, and Nginx runtime graph
 - The current OpenAPI contract exposes only the people collection.
 - The `nbadata` endpoint is a placeholder and does not yet return NBA data.
 - Authentication is scaffolded, but no persistent user loader is implemented.
-- There is no production backup, restore, or migration automation in this
-  repository.
+- There is no production backup or restore automation in this repository.
 
 ## Contributing
 

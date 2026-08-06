@@ -17,6 +17,7 @@ export TEST_DATABASE_URL=postgresql://nbaapi:test-only@localhost:5432/nbaapi
 pytest -q
 ```
 
-The integration test verifies the server major version, creates the SQLAlchemy
-schema, confirms the `person` table exists, and removes the test schema. Use a
-disposable database only; the test intentionally drops application tables.
+The integration test verifies the server major version, applies the checked-in
+Alembic migration, confirms the `person` table exists, and downgrades to the
+empty migration base. Use a disposable database only; the test intentionally
+changes application tables.

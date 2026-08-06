@@ -16,9 +16,9 @@ PostgreSQL major-version upgrades are separate operations: Alembic changes the
 application schema, while a PostgreSQL 13-to-18 move requires a verified
 database backup/restore or `pg_upgrade` process outside this repository.
 
-The repository currently has no committed revision files under `versions/`.
-Until a migration baseline is introduced, the development-only
-`flask --app manage init-db` command recreates the schema destructively.
+`versions/3f45a7d8b2c1_create_person_table.py` is the checked-in schema baseline.
+The development-only `flask --app manage init-db` command bypasses migration
+history and recreates the schema destructively.
 
 See the [Flask-Migrate documentation](https://flask-migrate.readthedocs.io/)
 and [Alembic documentation](https://alembic.sqlalchemy.org/).

@@ -17,4 +17,4 @@ COPY --chown=appuser:appuser migrations migrations
 USER appuser
 
 EXPOSE 5000
-CMD ["uvicorn", "unicorn:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["sh", "-c", "flask --app manage:app db upgrade && exec uvicorn unicorn:app --host 0.0.0.0 --port 5000"]

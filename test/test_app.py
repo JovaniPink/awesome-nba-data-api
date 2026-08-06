@@ -3,6 +3,7 @@
 import os
 
 import pytest
+from flask_migrate import downgrade, upgrade
 from sqlalchemy import inspect, text
 
 from app import create_app, db
@@ -57,8 +58,8 @@ def test_postgres_18_schema_round_trip():
             text("SELECT current_setting('server_version_num')::integer")
         ).scalar_one()
         assert version_number >= 180000
+        db.session.rollback()
 
-        db.drop_all()
-        db.create_all()
+        upgrade()
         assert inspect(db.engine).has_table("person")
-        db.drop_all()
+        downgrade(revision="base")
