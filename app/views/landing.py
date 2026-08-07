@@ -1,12 +1,4 @@
-from flask import Blueprint, redirect, render_template, current_app
-from flask import (
-    request,
-    url_for,
-    flash,
-    send_from_directory,
-    jsonify,
-    render_template_string,
-)
+from flask import Blueprint, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 # When using a Flask app factory we must use a blueprint to avoid needing 'app' for '@app.route'

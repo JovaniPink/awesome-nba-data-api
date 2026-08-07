@@ -3,8 +3,9 @@ This is the people module and supports all the REST actions for the
 people data
 """
 
-from flask import make_response, abort
-from app import db, ma
+from flask import abort, make_response
+
+from app import db
 from app.models.nba_models import Person, PersonSchema
 
 
@@ -46,7 +47,7 @@ def read_one(person_id):
     # Otherwise, nope, didn't find that person
     else:
         abort(
-            404, "Person not found for Id: {person_id}".format(person_id=person_id),
+            404, f"Person not found for Id: {person_id}",
         )
 
 
@@ -87,7 +88,7 @@ def create(person):
     else:
         abort(
             409,
-            "Person {fname} {lname} exists already".format(fname=fname, lname=lname),
+            f"Person {fname} {lname} exists already",
         )
 
 
@@ -117,14 +118,14 @@ def update(person_id, person):
     # Are we trying to find a person that does not exist?
     if update_person is None:
         abort(
-            404, "Person not found for Id: {person_id}".format(person_id=person_id),
+            404, f"Person not found for Id: {person_id}",
         )
 
     # Would our update create a duplicate of another person already existing?
     elif existing_person is not None and existing_person.person_id != person_id:
         abort(
             409,
-            "Person {fname} {lname} exists already".format(fname=fname, lname=lname),
+            f"Person {fname} {lname} exists already",
         )
 
     # Otherwise go ahead and update!
@@ -162,11 +163,11 @@ def delete(person_id):
         db.session.delete(person)
         db.session.commit()
         return make_response(
-            "Person {person_id} deleted".format(person_id=person_id), 200
+            f"Person {person_id} deleted", 200
         )
 
     # Otherwise, nope, didn't find that person
     else:
         abort(
-            404, "Person not found for Id: {person_id}".format(person_id=person_id),
+            404, f"Person not found for Id: {person_id}",
         )

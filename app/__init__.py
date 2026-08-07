@@ -19,7 +19,7 @@ login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(_user_id):
     """Return no user until the API defines a persistent user model."""
-    return None
+    return
 
 
 def create_app(extra_config_settings=None):
