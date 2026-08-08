@@ -2,10 +2,10 @@
 
 # Reproducible dependency maintenance and security validation
 pip-audit==2.10.1
-pip-tools==7.6.0
+uv==0.12.3
 
 # Test and lint tooling
 httpx2==2.9.1
 pytest==9.1.1
 pytest-cov==7.1.0
-ruff==0.16.1
+ruff==0.16.2

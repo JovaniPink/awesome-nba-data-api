@@ -47,12 +47,18 @@ cp .env.example .env
 
 `requirements.in` / `requirements.txt` own the production graph copied into the image.
 `requirements-dev.in` / `requirements-dev.txt` extend that graph with tests, linting, auditing, and
-lockfile tooling. Regenerate both locks on Python 3.14:
+the pinned uv lockfile tool. Regenerate both locks for Python 3.14:
 
 ```bash
-pip-compile --upgrade --output-file=requirements.txt --strip-extras requirements.in
-pip-compile --upgrade --output-file=requirements-dev.txt --strip-extras requirements-dev.in
+uv pip compile --python-platform linux --python-version 3.14 --upgrade --output-file=requirements.txt --strip-extras requirements.in
+uv pip compile --python-platform linux --python-version 3.14 --upgrade --output-file=requirements-dev.txt --strip-extras requirements-dev.in
 ```
+
+The generated-file headers are part of the Renovate contract: its `pip-compile` manager reads the
+command and input path from each header, and supports `uv pip compile`. Keep the headers intact so
+dependency PRs can refresh both source constraints and compiled artifacts. Linux is explicit because
+it is the CI and container target. CI recompiles both locks without upgrades and fails if the
+checked-in artifacts are stale.
 
 Never put production credentials in `.env`; the checked-in example values are local placeholders.
 
