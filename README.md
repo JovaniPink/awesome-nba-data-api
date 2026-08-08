@@ -27,8 +27,11 @@ client
 - `migrations/` owns the Alembic schema history.
 - `unicorn.py` exposes the Connexion ASGI application consumed by Uvicorn.
 - `manage.py` exposes the underlying Flask application for CLI and migration commands.
-- `app/celery/` is an unintegrated worker scaffold; Compose does not currently run a broker or
-  worker.
+
+The production runtime is request-driven and intentionally has no background worker or message
+broker. Add asynchronous processing only with a concrete job contract, idempotency and retry rules,
+broker ownership, observability, and corresponding Compose and CI coverage; do not ship an
+unexercised worker dependency in the API image.
 
 ## Requirements
 
