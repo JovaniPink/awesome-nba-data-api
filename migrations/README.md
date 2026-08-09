@@ -17,6 +17,12 @@ application schema, while a PostgreSQL 13-to-18 move requires a verified
 database backup/restore or `pg_upgrade` process outside this repository.
 
 `versions/3f45a7d8b2c1_create_person_table.py` is the checked-in schema baseline.
+The following UTC timestamp revision interprets existing naive PostgreSQL values
+as UTC before converting them to `timestamp with time zone`; its downgrade
+converts values back through UTC. This keeps the database type aligned with the
+OpenAPI `date-time` response contract. SQLite has no timezone-aware storage type,
+so the revision is intentionally a schema no-op there; the response schema still
+attaches UTC to its legacy naive values.
 The development-only `flask --app manage init-db` command bypasses migration
 history and recreates the schema destructively.
 
