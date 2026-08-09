@@ -32,7 +32,11 @@ def create_app(extra_config_settings=None):
         app.config.from_object("app.local_settings")
     app.config.update(extra_config_settings or {})
 
-    connexion_app.add_api("swagger.yaml")
+    connexion_app.add_api(
+        "swagger.yaml",
+        strict_validation=True,
+        validate_responses=True,
+    )
 
     ma.init_app(app)
     db.init_app(app)

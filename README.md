@@ -4,9 +4,9 @@ OpenAPI-first NBA data service built with Python 3.14, Connexion 3, Flask 3, SQL
 PostgreSQL 18. Uvicorn serves the Connexion ASGI application; Docker Compose adds PostgreSQL and an
 Nginx reverse proxy.
 
-This repository currently exposes a small people API and the supporting application/database
-baseline. It is not yet the complete NBA statistics platform described by older versions of this
-README.
+This repository currently exposes a small, read-only people API and the supporting
+application/database baseline. It is not yet the complete NBA statistics platform described by
+older versions of this README.
 
 ## Architecture
 
@@ -20,7 +20,9 @@ client
           -> PostgreSQL 18
 ```
 
-- `app/swagger.yaml` is the authoritative OpenAPI route contract.
+- `app/swagger.yaml` is the authoritative OpenAPI route contract. Connexion rejects undeclared
+  query parameters, validates declared parameter ranges, and validates successful responses against
+  that contract.
 - `app/api/` implements OpenAPI `operationId` handlers.
 - `app/views/` owns HTML and non-OpenAPI Flask blueprints.
 - `app/models/` owns SQLAlchemy models and Marshmallow schemas.
@@ -79,9 +81,28 @@ Open:
 - landing page: http://localhost:5000/
 - Swagger UI: http://localhost:5000/api/ui/
 - people endpoint: http://localhost:5000/api/people
+- person detail endpoint: http://localhost:5000/api/people/1
 - legacy sample blueprint: http://localhost:5000/nbadata
 
 `/home` is login-protected, but the repository does not yet define a persistent user model.
+
+### People API boundary
+
+The public OpenAPI surface is intentionally read-only:
+
+- `GET /api/people` returns at most 50 records by default, accepts `limit=1..100` and a nonnegative
+  `offset`, and uses stable last-name, first-name, then id ordering.
+- `GET /api/people/{person_id}` returns one record or an RFC 7807-style 404 problem response.
+- Unknown query parameters and invalid ranges fail closed with `400 Bad Request`.
+- Person timestamps are stored and serialized as explicit UTC values that satisfy OpenAPI's
+  RFC 3339 `date-time` format.
+
+The repository does not expose create, update, or delete operations. Adding mutations requires an
+explicit authentication and authorization model, database uniqueness/nullability decisions,
+conflict semantics, and request/response tests; do not add a route merely because a handler once
+existed. This follows Connexion's documented
+[strict request and response validation](https://connexion.readthedocs.io/en/latest/validation.html)
+contract.
 
 ## Run the full stack
 
@@ -136,7 +157,8 @@ Fast local gate:
 
 ```bash
 python -m pytest -q
-ruff check app manage.py unicorn.py test
+ruff check app manage.py unicorn.py test migrations/versions
+ruff format --check app manage.py unicorn.py test migrations/versions
 python -m openapi_spec_validator app/swagger.yaml
 pip-audit -r requirements.txt
 docker compose config --quiet
@@ -151,9 +173,9 @@ export TEST_DATABASE_URL=postgresql://nbaapi:test-only@localhost:5432/nbaapi
 python -m pytest -q
 ```
 
-CI starts a disposable PostgreSQL 18 service, runs all tests, validates the Compose model, and builds
-the production image. The image contains only the runtime lockfile and runs as unprivileged UID
-`10001`.
+CI starts a disposable PostgreSQL 18 service, checks application, test, and migration formatting,
+validates the OpenAPI and Compose models, runs all tests, and builds the production image. The image
+contains only the runtime lockfile and runs as unprivileged UID `10001`.
 
 ## Contributing
 

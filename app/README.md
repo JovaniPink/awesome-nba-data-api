@@ -21,6 +21,11 @@ application.
 are created once at module level and initialized inside the factory so tests can
 construct isolated applications.
 
+The application registers `swagger.yaml` with strict parameter validation and
+response validation. OpenAPI handlers must therefore accept the declared Python
+arguments and return data matching the documented schema. Keep the people API
+read-only until an authentication and authorization contract exists.
+
 When adding an API route, update `swagger.yaml`, implement its `operationId`, and
 add a request test. Blueprint-only routes should be registered in
 `create_app()` and documented in the root README.

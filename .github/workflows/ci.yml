@@ -44,7 +44,9 @@ jobs:
           uv pip compile --python-platform linux --python-version 3.14 --output-file=requirements.txt --strip-extras requirements.in
           uv pip compile --python-platform linux --python-version 3.14 --output-file=requirements-dev.txt --strip-extras requirements-dev.in
           git diff --exit-code -- requirements.txt requirements-dev.txt
-      - run: ruff check app manage.py unicorn.py test
+      - run: ruff check app manage.py unicorn.py test migrations/versions
+      - run: ruff format --check app manage.py unicorn.py test migrations/versions
+      - run: python -m openapi_spec_validator app/swagger.yaml
       - run: pytest -q
       - run: pip-audit -r requirements.txt
       - run: cp .env.example .env
