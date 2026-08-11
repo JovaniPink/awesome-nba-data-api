@@ -8,6 +8,21 @@ This repository currently exposes a small, read-only people API and the supporti
 application/database baseline. It is not yet the complete NBA statistics platform described by
 older versions of this README.
 
+## Architecture status
+
+This repository is the active **serving boundary** for the NBA project family. The current stack is
+deliberately request-driven; its target is to serve governed, read-only facts and, later,
+precomputed model outputs. It does not scrape sources, train models, or run an unbounded workflow
+in an HTTP request.
+
+The supporting infrastructure is ahead of the current `Person` placeholder domain, but it is not a
+reason to rewrite the service. The next useful work is to add one governed NBA vertical with source
+lineage and tests, then remove the placeholder routes that it replaces. Do not restore Celery,
+RabbitMQ, or a separate worker until a measured workload requires asynchronous execution.
+
+See [`docs/architecture-investigation.md`](docs/architecture-investigation.md) for the evidence,
+cross-repository boundaries, target data flow, rejected alternatives, and decision gates.
+
 ## Architecture
 
 ```text
