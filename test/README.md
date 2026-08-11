@@ -9,7 +9,8 @@ pytest -q
 `test_app.py` covers the rendered landing page and the OpenAPI people collection
 and detail endpoints using a temporary SQLite database. The API cases pin stable
 ordering, the default and maximum page boundary, strict rejection of invalid or
-unknown query parameters, and the not-found problem response. The module also
+unknown query parameters, the OpenAPI 3.0.3 contract shape, explicit success and
+problem media types, and the not-found problem response. The module also
 contains a PostgreSQL integration test that is skipped unless `TEST_DATABASE_URL`
 is set with an explicit reason.
 

@@ -35,7 +35,7 @@ client
           -> PostgreSQL 18
 ```
 
-- `app/swagger.yaml` is the authoritative OpenAPI route contract. Connexion rejects undeclared
+- `app/swagger.yaml` is the authoritative OpenAPI 3.0.3 route contract. Connexion rejects undeclared
   query parameters, validates declared parameter ranges, and validates successful responses against
   that contract.
 - `app/api/` implements OpenAPI `operationId` handlers.
@@ -118,6 +118,11 @@ conflict semantics, and request/response tests; do not add a route merely becaus
 existed. This follows Connexion's documented
 [strict request and response validation](https://connexion.readthedocs.io/en/latest/validation.html)
 contract.
+
+The contract uses OpenAPI 3 response media types and reusable schemas rather
+than the legacy Swagger 2 `produces`/`definitions` model. Problem responses are
+declared as `application/problem+json`; successful reads remain
+`application/json`.
 
 ## Run the full stack
 

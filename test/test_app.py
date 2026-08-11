@@ -39,6 +39,7 @@ def test_people_endpoint_uses_openapi_route(application):
     response = application.test_client().get("/api/people")
 
     assert response.status_code == 200
+    assert response.headers["content-type"] == "application/json"
     assert response.json() == []
 
 
@@ -67,9 +68,16 @@ def test_people_endpoint_is_stably_ordered_and_bounded(application):
 def test_people_endpoint_rejects_invalid_or_unknown_query_parameters(application):
     client = application.test_client()
 
-    assert client.get("/api/people?limit=0").status_code == 400
-    assert client.get("/api/people?limit=101").status_code == 400
-    assert client.get("/api/people?unexpected=true").status_code == 400
+    responses = [
+        client.get("/api/people?limit=0"),
+        client.get("/api/people?limit=101"),
+        client.get("/api/people?unexpected=true"),
+    ]
+    assert all(response.status_code == 400 for response in responses)
+    assert all(
+        response.headers["content-type"] == "application/problem+json"
+        for response in responses
+    )
 
 
 def test_person_detail_endpoint_returns_one_or_404(application):
@@ -84,21 +92,38 @@ def test_person_detail_endpoint_returns_one_or_404(application):
     missing = client.get("/api/people/999999")
 
     assert found.status_code == 200
+    assert found.headers["content-type"] == "application/json"
     assert found.json()["person_id"] == person_id
     assert found.json()["fname"] == "Ja"
     assert found.json()["lname"] == "Morant"
     assert found.json()["timestamp"].endswith("+00:00")
     assert missing.status_code == 404
+    assert missing.headers["content-type"] == "application/problem+json"
     assert missing.json()["status"] == 404
 
 
 def test_openapi_contract_identifies_the_service():
     specification = yaml.safe_load(Path("app/swagger.yaml").read_text(encoding="utf-8"))
 
+    assert specification["openapi"] == "3.0.3"
+    assert "swagger" not in specification
     assert specification["info"]["title"] == "NBA Data API"
+    assert specification["servers"] == [{"url": "/api"}]
     assert "/people" in specification["paths"]
     assert "/people/{person_id}" in specification["paths"]
-    assert specification["paths"]["/people"]["get"]["parameters"][0]["maximum"] == 100
+    assert (
+        specification["paths"]["/people"]["get"]["parameters"][0]["schema"]["maximum"]
+        == 100
+    )
+    assert (
+        specification["paths"]["/people"]["get"]["responses"]["200"]["content"][
+            "application/json"
+        ]["schema"]["items"]["$ref"]
+        == "#/components/schemas/Person"
+    )
+    assert "definitions" not in specification
+    for operations in specification["paths"].values():
+        assert set(operations).isdisjoint({"post", "put", "patch", "delete"})
 
 
 def test_legacy_sample_blueprint_remains_available(application):
