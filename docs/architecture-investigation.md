@@ -31,7 +31,7 @@ The useful architecture must:
 
 | Area | Evidence in this repository | Assessment |
 | --- | --- | --- |
-| HTTP contract | Connexion and `app/swagger.yaml`; strict parameter and response validation | Good boundary, although the contract is still OpenAPI/Swagger 2.0 |
+| HTTP contract | Connexion and OpenAPI 3.0.3 in `app/swagger.yaml`; strict parameter and response validation | Good executable boundary |
 | Runtime | Uvicorn, Flask/Connexion, SQLAlchemy, Alembic, PostgreSQL 18 | Coherent conventional service stack |
 | Public domain | Two read-only `Person` endpoints | Placeholder, not an NBA product vertical |
 | Legacy surface | HTML/login scaffolding and `/nbadata` sample route | Retire as real domain routes replace it |
@@ -103,8 +103,8 @@ semantics are product behavior, not metadata decoration.
    change.
 4. Add keyset pagination only when list size makes offset pagination measurably inadequate.
 5. Remove the `Person`, login-page, and sample-blueprint scaffolding when no longer used.
-6. Migrate the contract from Swagger 2.0 to OpenAPI 3.x as a bounded compatibility change, not as a
-   prerequisite to the first NBA endpoint. Connexion supports both formats.
+6. Preserve the OpenAPI 3 contract and its request/response validation as real NBA resources replace
+   the placeholder people surface.
 
 Nginx is optional for local development and may eventually become a deployment-profile concern.
 It is not currently the major source of complexity, so removing it is lower value than creating a

@@ -14,7 +14,7 @@ application.
 | `templates/` | Jinja templates for HTML routes. |
 | `views/` | Flask blueprints outside the OpenAPI contract. |
 | `settings.py` | Environment-backed Flask and database settings. |
-| `swagger.yaml` | Authoritative OpenAPI route contract. |
+| `swagger.yaml` | Authoritative OpenAPI 3.0.3 route contract. |
 
 `create_app()` in `app/__init__.py` returns a `connexion.FlaskApp`. Use
 `connexion_app.app` when an API requires the underlying Flask object. Extensions

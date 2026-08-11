@@ -1,16 +1,12 @@
-swagger: "2.0"
+openapi: 3.0.3
 info:
-  description: OpenAPI contract for the NBA data service
-  version: "1.0.0"
   title: NBA Data API
-consumes:
-  - application/json
-produces:
-  - application/json
+  description: OpenAPI contract for the NBA data service
+  version: 1.0.0
 
-basePath: /api
+servers:
+  - url: /api
 
-# Paths supported by the server application
 paths:
   /people:
     get:
@@ -24,30 +20,36 @@ paths:
           in: query
           description: Maximum number of people to return
           required: false
-          type: integer
-          format: int32
-          default: 50
-          minimum: 1
-          maximum: 100
+          schema:
+            type: integer
+            format: int32
+            default: 50
+            minimum: 1
+            maximum: 100
         - name: offset
           in: query
           description: Number of ordered people to skip
           required: false
-          type: integer
-          format: int32
-          default: 0
-          minimum: 0
+          schema:
+            type: integer
+            format: int32
+            default: 0
+            minimum: 0
       responses:
-        200:
+        "200":
           description: A stable, bounded page of people
-          schema:
-            type: array
-            items:
-              $ref: "#/definitions/Person"
-        400:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Person"
+        "400":
           description: Invalid or unknown query parameter
-          schema:
-            $ref: "#/definitions/Problem"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /people/{person_id}:
     get:
       operationId: app.api.people.read_one
@@ -59,48 +61,56 @@ paths:
           in: path
           description: Numeric person identifier
           required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: The requested person
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "404":
+          description: Person does not exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+components:
+  schemas:
+    Person:
+      type: object
+      properties:
+        person_id:
           type: integer
           format: int64
-          minimum: 1
-      responses:
-        200:
-          description: The requested person
-          schema:
-            $ref: "#/definitions/Person"
-        404:
-          description: Person does not exist
-          schema:
-            $ref: "#/definitions/Problem"
-
-definitions:
-  Person:
-    type: object
-    properties:
-      person_id:
-        type: integer
-        format: int64
-        description: Person identifier
-      fname:
-        type: string
-        description: First name
-      lname:
-        type: string
-        description: Last name
-      timestamp:
-        type: string
-        format: date-time
-        description: Creation or update timestamp
-  Problem:
-    type: object
-    required:
-      - title
-      - status
-    properties:
-      type:
-        type: string
-      title:
-        type: string
-      status:
-        type: integer
-      detail:
-        type: string
+          description: Person identifier
+        fname:
+          type: string
+          nullable: true
+          description: First name
+        lname:
+          type: string
+          nullable: true
+          description: Last name
+        timestamp:
+          type: string
+          format: date-time
+          description: Creation or update timestamp
+    Problem:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
