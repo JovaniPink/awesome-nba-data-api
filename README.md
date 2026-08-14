@@ -1,8 +1,15 @@
 # NBA Data API
 
-OpenAPI-first NBA data service built with Python 3.14, Connexion 3, Flask 3, SQLAlchemy 2, and
-PostgreSQL 18. Uvicorn serves the Connexion ASGI application; Docker Compose adds PostgreSQL and an
-Nginx reverse proxy.
+> [!IMPORTANT]
+> **Archived on August 13, 2026.** Source discovery continues in
+> [awesome-nba-data](https://github.com/JovaniPink/awesome-nba-data). The private,
+> fixture-backed product and governed data contracts now live in
+> [nba-lab](https://github.com/JovaniPink/nba-lab). This repository is preserved as
+> historical API scaffolding; it is not a service boundary or runtime dependency.
+
+This repository contains an OpenAPI-first NBA data service scaffold built with Python 3.14,
+Connexion 3, Flask 3, SQLAlchemy 2, and PostgreSQL 18. It is preserved without history rewriting or
+deletion.
 
 This repository currently exposes a small, read-only people API and the supporting
 application/database baseline. It is not yet the complete NBA statistics platform described by
@@ -10,18 +17,16 @@ older versions of this README.
 
 ## Architecture status
 
-This repository is the active **serving boundary** for the NBA project family. The current stack is
-deliberately request-driven; its target is to serve governed, read-only facts and, later,
-precomputed model outputs. It does not scrape sources, train models, or run an unbounded workflow
-in an HTTP request.
+This repository is **not active**. NBA Lab is the one full-stack product and data-contract boundary;
+the public catalog remains separate. The Flask `Person` routes, Compose stack, and OpenAPI surface
+below are historical implementation evidence, not a supported public API or deployment.
 
-The supporting infrastructure is ahead of the current `Person` placeholder domain, but it is not a
-reason to rewrite the service. The next useful work is to add one governed NBA vertical with source
-lineage and tests, then remove the placeholder routes that it replaces. Do not restore Celery,
-RabbitMQ, or a separate worker until a measured workload requires asynchronous execution.
+Do not restore Celery, RabbitMQ, the placeholder routes, or a separate API in NBA Lab. Useful domain
+and lineage decisions may be reproduced there with tests; this repository itself stays archived.
 
-See [`docs/architecture-investigation.md`](docs/architecture-investigation.md) for the evidence,
-cross-repository boundaries, target data flow, rejected alternatives, and decision gates.
+See [`ARCHIVE_NOTICE.md`](ARCHIVE_NOTICE.md) for the preservation and dependency audit, and
+[`docs/architecture-investigation.md`](docs/architecture-investigation.md) for the superseded design
+record.
 
 ## Architecture
 
