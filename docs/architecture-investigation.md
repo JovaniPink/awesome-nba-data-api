@@ -2,11 +2,15 @@
 
 _Reviewed: 2026-08-11_
 
+> **Superseded August 13, 2026.** The four-repository boundary evaluated below was replaced by
+> [awesome-nba-data](https://github.com/JovaniPink/awesome-nba-data) plus the private
+> [nba-lab](https://github.com/JovaniPink/nba-lab). This document remains historical evidence; its
+> recommendation to keep this API active is no longer current.
+
 ## Decision
 
-Keep this repository as the active, read-only NBA serving service. Evolve it incrementally; do not
-replace it with a distributed platform and do not put ingestion or model training in the request
-path.
+Archive this repository without deleting or rewriting it. Do not carry its placeholder Flask
+routes, standalone API boundary, or deployment scaffolding into NBA Lab.
 
 The stack is infrastructure-heavy relative to the two current `Person` endpoints, but it is not
 architecturally incoherent. The application has an executable API contract, migrations, request and
@@ -49,12 +53,12 @@ without answering a current product question.
 | --- | --- | --- |
 | `awesome-nba-data` | Curated catalog of sources and tools | Runtime dependency or copied data warehouse |
 | `nba-data` | Historical research archive and source-discovery reference | Live ingestion system or authoritative current dataset |
-| `awesome-nba-data-api` | Active serving boundary and initial home for governed batch jobs | Scraper in the request path or training cluster |
+| `awesome-nba-data-api` | Archived historical API scaffold | Runtime dependency or revived standalone API |
+| `nba-lab` | Private fixture-backed product, contracts, and bounded batch layer | Public API or unapproved live acquisition |
 | `nba-task-queue` | Superseded design record; archive candidate | Deployed broker/worker platform without a job contract |
 
-Keep the first production batch jobs in this repository, as a separate package and deployment
-command, until their release cadence or ownership genuinely diverges. A repository boundary is an
-operational commitment, not a substitute for a Python module boundary.
+Keep bounded fixture jobs with NBA Lab. A repository boundary is an operational commitment, not a
+substitute for a Python module boundary.
 
 ## Target data flow
 
